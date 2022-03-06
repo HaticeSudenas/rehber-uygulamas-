@@ -6,19 +6,37 @@ import 'package:flutter_project_1/model/contact.dart';
 import 'package:image_picker/image_picker.dart';
 
 class AddContactPage extends StatelessWidget {
+  final Contact contact;
+  AddContactPage({required this.contact});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("add new context"),
+        title:Text(contact.id==null ? "add new contact":contact.name),
       ),
-      body: const SingleChildScrollView(child: AddContactForm()),
-    );
+      body:SingleChildScrollView(child:ContactForm(contact: contact,child: AddContactForm()),),);
+
   }
+}
+class ContactForm extends InheritedWidget{
+  final Contact contact;
+  ContactForm({Key? key,required Widget child,required this.contact}):super(key: key,child: child);
+  static ContactForm of(BuildContext context){
+    final ContactForm? result = context.dependOnInheritedWidgetOfExactType<ContactForm>();
+    assert(result != null, 'No FrogColor found in context');
+    return result!;
+    //kaldırılmış return context.dependOnInheritedWidgetOfExactType<ContactForm>();
+  }
+  @override
+  bool updateShouldNotify(ContactForm oldWidget) {
+    return contact.id!=oldWidget.contact.id;
+  }
+
 }
 
 class AddContactForm extends StatefulWidget {
-  const AddContactForm({Key? key}) : super(key: key);
+
+ const AddContactForm({Key? key}) : super(key: key);
 
   @override
   _AddContactFormState createState() => _AddContactFormState();
@@ -35,8 +53,7 @@ class _AddContactFormState extends State<AddContactForm> {
   }
   @override
   Widget build(BuildContext context) {
-    String? name;
-    String? PhoneNumber;
+    Contact contact=ContactForm.of(context).contact;
     return Column(
       children: [
         Stack(children: [
@@ -66,13 +83,14 @@ class _AddContactFormState extends State<AddContactForm> {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: TextFormField(
                     decoration: const InputDecoration(hintText: "contact Name"),
+                    initialValue: contact.name,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return "name required";
                       }
                     },
                     onSaved: (Value) {
-                      name = Value;
+                      contact.name = Value.toString();
                     },
                   ),
                 ),
@@ -81,13 +99,14 @@ class _AddContactFormState extends State<AddContactForm> {
                   child: TextFormField(
                     decoration: const InputDecoration(hintText: "phoneNumber"),
                     keyboardType: TextInputType.phone,
+                    initialValue: contact.phonenumber,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return "phone number required";
                       }
                     },
                     onSaved: (Value) {
-                      PhoneNumber = Value;
+                      contact.phonenumber = Value.toString();
                     },
                   ),
                 ),
@@ -95,16 +114,24 @@ class _AddContactFormState extends State<AddContactForm> {
                   onPressed: () async {
                     if (_formkey.currentState!.validate()) {
                       _formkey.currentState!.save();
-                      var contact=Contact(
-                          name: name.toString(),
-                          phonenumber: PhoneNumber.toString());
-                     await _dbHelper.insertContacts(contact);
-                      var snackBar = Scaffold.of(context).showSnackBar(
+                      if(contact.id==null){
+                         await _dbHelper.insertContacts(contact);
+                         var snackBar = Scaffold.of(context).showSnackBar(
                         SnackBar(
                             duration: const Duration(milliseconds: 400),
-                            content: Text("$name has been saved")),
+                            content: Text("${contact.name} has been saved")),
                       );
                       snackBar.closed.then((value) => Navigator.pop(context));
+                      }
+                      else{
+                        await _dbHelper.updateContact(contact);
+                        var snackBar = Scaffold.of(context).showSnackBar(
+                        SnackBar(
+                            duration: const Duration(milliseconds: 400),
+                            content: Text("${contact.name} has been update")),
+                      );
+                      snackBar.closed.then((value) => Navigator.pop(context));
+                      }
                     }
                   },
                   color: Colors.blue,

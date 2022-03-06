@@ -44,4 +44,12 @@ class DbHelper {
     return await dbClient.insert("Contact",contact.toMap());
 
   }
+  Future updateContact(Contact contact) async{
+    var dbClient=await db;
+    return await dbClient.update("Contact",contact.toMap(),where:"id=?",whereArgs:[contact.id]);
+  }
+  Future removeContacts(int id) async{
+    var dbClient=await db;
+    return await dbClient.delete("contact",where:"id=?",whereArgs:[id]);
+  }
 }

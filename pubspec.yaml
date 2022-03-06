@@ -29,10 +29,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  provider: ^6.0.2
   numberpicker: ^2.1.1
   image_picker: ^0.8.4+10
   sqflite: ^2.0.2
+  url_launcher: ^6.0.20
 
   
 

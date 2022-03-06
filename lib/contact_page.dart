@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_project_1/database/db_helper.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 import 'add_contact_page.dart';
 import 'model/contact.dart';
 
@@ -30,7 +30,7 @@ class _ContactPageState extends State<ContactPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await Navigator.push(context,
-              MaterialPageRoute(builder: (context) => AddContactPage()));
+              MaterialPageRoute(builder: (context) => AddContactPage(contact: Contact(name: "",phonenumber: ""),)));
           setState(() {});
         },
         child: const Icon(Icons.add),
@@ -47,34 +47,48 @@ class _ContactPageState extends State<ContactPage> {
             itemCount:snapshot.data.length,
             itemBuilder: (BuildContext context, int index) {
               Contact contact = snapshot.data[index];
-              return Dismissible(
-                key: Key(contact.name),
-                onDismissed: (direction) {
-                  setState(() {
-                    contacts.removeAt(index);
-                  });
-                  Scaffold.of(context).showSnackBar(SnackBar(
-                    content: Text("${contact.name} is have delected"),
-                    action: SnackBarAction(
-                      label: "UNDO",
-                      onPressed: () {
-                        setState(() {
-                          contacts.add(contact);
-                        });
-                      },
-                    ),
-                  ));
+              return GestureDetector(
+                onTap: () async{
+                  await Navigator.push(context, MaterialPageRoute(builder:(context)=>AddContactPage(contact: contact,)));
+                  setState(() {});
                 },
-                child: ListTile(
-                  leading: CircleAvatar(
-                    child: Text(
-                      contact.name[0],
-                      style: const TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.bold),
+                child: Dismissible(
+                  key:UniqueKey(),
+                  direction:DismissDirection.endToStart,
+                  background: Container(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Icon(Icons.delete,color: Colors.white,size: 35,),
                     ),
+                    color: Colors.red,
+                    ),
+                  onDismissed: (direction) async {
+                    _dbHelper.removeContacts(contact.id!);
+                    setState(() {});
+                    Scaffold.of(context).showSnackBar(SnackBar(
+                      content: Text("${contact.name} is have delected"),
+                      action: SnackBarAction(
+                        label: "UNDO",
+                        onPressed: () async{
+                          _dbHelper.insertContacts(contact);
+                          setState(() {});
+                        },
+                      ),
+                    ));
+                  },
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      child: Text(
+                        contact.name[0],
+                        style: const TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    title: Text(contact.name),
+                    subtitle: Text(contact.phonenumber),
+                    trailing: IconButton(icon: Icon(Icons.phone),onPressed: () async=>_callContact(contact.phonenumber),),
                   ),
-                  title: Text(contact.name),
-                  subtitle: Text(contact.phonenumber),
                 ),
               );
             });
@@ -82,4 +96,10 @@ class _ContactPageState extends State<ContactPage> {
       ),
     );
   }
+}
+_callContact(String PhoneNumber) async{
+  String tel="tel:$PhoneNumber";  
+ // if(await canLaunch(tel)){
+  // await launch(tel);
+ // } 
 }

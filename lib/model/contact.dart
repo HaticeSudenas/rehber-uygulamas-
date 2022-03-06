@@ -1,4 +1,5 @@
 class Contact {
+  int? id;
   late String name;
   late String phonenumber;
 
@@ -17,7 +18,7 @@ class Contact {
     Contact(name: "ELİF", phonenumber: "0535 666 7716"),
     Contact(name: "ZEYNEP", phonenumber: "0595 666 7776"),
   ];
-  Contact({required this.name, required this.phonenumber});
+  Contact({required this.name,required this.phonenumber});
 
   Map<String,dynamic> toMap(){
     var map=Map<String,dynamic>();
@@ -26,6 +27,7 @@ class Contact {
     return map;
   }
   Contact.fromMap(Map<String,dynamic> map){
+        id=map["id"];
         name=map["name"];
         phonenumber=map["phone_number"];
 
